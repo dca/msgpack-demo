@@ -23,7 +23,16 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 
 	switch {
 	case isMsgPackTypeNil(currentByte):
+		*i++
 		return nil, nil
+
+	case isMsgPackTypeTrue(currentByte):
+		*i++
+		return true, nil
+
+	case isMsgPackTypeFalse(currentByte):
+		*i++
+		return false, nil
 
 	case isMsgPackTypeString(currentByte):
 		str, err := m.handleMsgPackTypeString(data, jsonObj, i)

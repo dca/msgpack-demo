@@ -15,10 +15,31 @@ func TestUnmarshal(t *testing.T) {
 		expectedJsonObj map[string]interface{}
 	}{
 		{
-			desc:       "Test Case - 1",
+			desc:       "Test Case - string",
 			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xa3, 0x61, 0x73, 0x64},
 			expectedJsonObj: map[string]interface{}{
 				"compact": "asd",
+			},
+		},
+		{
+			desc:       "Test Case - nil",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xc0},
+			expectedJsonObj: map[string]interface{}{
+				"compact": nil,
+			},
+		},
+		{
+			desc:       "Test Case - True",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xc3},
+			expectedJsonObj: map[string]interface{}{
+				"compact": true,
+			},
+		},
+		{
+			desc:       "Test Case - False",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xc2},
+			expectedJsonObj: map[string]interface{}{
+				"compact": false,
 			},
 		},
 	}
