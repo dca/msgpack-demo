@@ -41,6 +41,13 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		}
 		return str, nil
 
+	case isMsgPackTypeArray(currentByte):
+		arr, err := m.handleMsgPackTypeArray(data, jsonObj, i)
+		if err != nil {
+			return nil, err
+		}
+		return arr, nil
+
 	case isMsgPackTypeMap(currentByte):
 		obj, err := m.handleMsgPackTypeMap(data, jsonObj, i)
 		if err != nil {
@@ -127,8 +134,29 @@ func (m *Msgpack) handleMsgPackTypeString(data []byte, jsonObj *map[string]inter
 	return string(strBytes), nil
 }
 
-func (m *Msgpack) handleMsgPackTypeArray() {
+func (m *Msgpack) handleMsgPackTypeArray(data []byte, jsonObj *map[string]interface{}, i *int) ([]interface{}, error) {
+	currentByte := data[*i]
+	*i++
 
+	// parse array length
+	arrLen := int(currentByte & 0x0F) // 0x0F = 00001111
+
+	// create new array
+	arr := make([]interface{}, arrLen)
+
+	// create error variable
+	var err error
+
+	// parse array elements
+	for j := 0; j < arrLen; j++ {
+		// parse array element
+		arr[j], err = m.decodeMsgpack(data, jsonObj, i)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return arr, nil
 }
 
 func (m *Msgpack) handleMsgPackTypeMap(data []byte, jsonObj *map[string]interface{}, i *int) (map[string]interface{}, error) {

@@ -42,6 +42,13 @@ func TestUnmarshal(t *testing.T) {
 				"compact": false,
 			},
 		},
+		{
+			desc:       "Test Case - Array",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0x92, 0xa1, 0x61, 0xa1, 0x62},
+			expectedJsonObj: map[string]interface{}{
+				"compact": []interface{}{"a", "b"},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
