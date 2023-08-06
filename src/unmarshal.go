@@ -57,7 +57,6 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return integer, nil
 
 	case isMsgPackTypeUint8(currentByte):
-		*i++
 		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint8, data, i)
 		if err != nil {
 			return nil, err
@@ -65,7 +64,6 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return integer, nil
 
 	case isMsgPackTypeUint16(currentByte):
-		*i++
 		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint16, data, i)
 		if err != nil {
 			return nil, err
@@ -73,7 +71,6 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return integer, nil
 
 	case isMsgPackTypeUint32(currentByte):
-		*i++
 		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint32, data, i)
 		if err != nil {
 			return nil, err
@@ -81,7 +78,6 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return integer, nil
 
 	case isMsgPackTypeUInt64(currentByte):
-		*i++
 		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint64, data, i)
 		if err != nil {
 			return nil, err
@@ -248,11 +244,12 @@ func (m *Msgpack) handleMsgPackTypeMap(data []byte, jsonObj *map[string]interfac
 // handleMsgPackTypeIntFamily handles int family types
 func (m *Msgpack) handleMsgPackTypeIntFamily(t int, data []byte, i *int) (interface{}, error) {
 
+	currentByte := data[*i]
+	*i++
+
 	var value interface{}
 	var err error
 	var bytes []byte
-
-	currentByte := data[*i]
 	length := 0
 
 	switch t {
