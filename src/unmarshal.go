@@ -24,117 +24,117 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 	currentByte := data[*i]
 
 	switch {
-	case isMsgPackTypeNil(currentByte):
+	case MsgPackTypes.IsMsgPackTypeNil(currentByte):
 		*i++
 		return nil, nil
 
-	case isMsgPackTypeTrue(currentByte):
+	case MsgPackTypes.IsMsgPackTypeTrue(currentByte):
 		*i++
 		return true, nil
 
-	case isMsgPackTypeFalse(currentByte):
+	case MsgPackTypes.IsMsgPackTypeFalse(currentByte):
 		*i++
 		return false, nil
 
-	case isMsgPackTypeString(currentByte):
+	case MsgPackTypes.IsMsgPackTypeString(currentByte):
 		str, err := m.handleMsgPackTypeString(data, jsonObj, i)
 		if err != nil {
 			return nil, err
 		}
 		return str, nil
 
-	case isMsgPackTypePositiveInt(currentByte):
+	case MsgPackTypes.IsMsgPackTypePositiveInt(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.FixIntPos, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeNegativeInt(currentByte):
+	case MsgPackTypes.IsMsgPackTypeNegativeInt(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.FixIntNeg, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeUint8(currentByte):
+	case MsgPackTypes.IsMsgPackTypeUint8(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint8, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeUint16(currentByte):
+	case MsgPackTypes.IsMsgPackTypeUint16(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint16, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeUint32(currentByte):
+	case MsgPackTypes.IsMsgPackTypeUint32(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint32, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeUInt64(currentByte):
+	case MsgPackTypes.IsMsgPackTypeUInt64(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint64, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeInt8(currentByte):
+	case MsgPackTypes.IsMsgPackTypeInt8(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int8, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeInt16(currentByte):
+	case MsgPackTypes.IsMsgPackTypeInt16(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int16, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeInt32(currentByte):
+	case MsgPackTypes.IsMsgPackTypeInt32(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int32, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeInt64(currentByte):
+	case MsgPackTypes.IsMsgPackTypeInt64(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int64, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeFloat32(currentByte):
+	case MsgPackTypes.IsMsgPackTypeFloat32(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Float32, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeFloat64(currentByte):
+	case MsgPackTypes.IsMsgPackTypeFloat64(currentByte):
 		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Float64, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
-	case isMsgPackTypeArray(currentByte):
+	case MsgPackTypes.IsMsgPackTypeArray(currentByte):
 		arr, err := m.handleMsgPackTypeArray(data, jsonObj, i)
 		if err != nil {
 			return nil, err
 		}
 		return arr, nil
 
-	case isMsgPackTypeMap(currentByte):
+	case MsgPackTypes.IsMsgPackTypeMap(currentByte):
 		obj, err := m.handleMsgPackTypeMap(data, jsonObj, i)
 		if err != nil {
 			return nil, err
@@ -143,89 +143,6 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return obj, nil
 	}
 	return *jsonObj, nil
-}
-
-// isMsgPackTypeNil checks if the byte represents a MsgPack nil type.
-func isMsgPackTypeNil(b byte) bool {
-	return b == MsgPackTypes.Nil
-}
-
-// isMsgPackTypeTrue checks if the byte represents a MsgPack true type.
-func isMsgPackTypeTrue(b byte) bool {
-	return b == MsgPackTypes.True
-}
-
-// isMsgPackTypeFalse checks if the byte represents a MsgPack false type.
-func isMsgPackTypeFalse(b byte) bool {
-	return b == MsgPackTypes.False
-}
-
-func isMsgPackTypePositiveInt(b byte) bool {
-	return (b & 0x80) == MsgPackTypes.FixIntPos
-}
-
-func isMsgPackTypeNegativeInt(b byte) bool {
-	return (b & 0xE0) == MsgPackTypes.FixIntNeg
-}
-
-func isMsgPackTypeUint8(b byte) bool {
-	return b == MsgPackTypes.Uint8
-}
-
-func isMsgPackTypeUint16(b byte) bool {
-	return b == MsgPackTypes.Uint16
-}
-
-func isMsgPackTypeUint32(b byte) bool {
-	return b == MsgPackTypes.Uint32
-}
-
-func isMsgPackTypeUInt64(b byte) bool {
-	return b == MsgPackTypes.Uint64
-}
-
-func isMsgPackTypeInt8(b byte) bool {
-	return b == MsgPackTypes.Int8
-}
-
-func isMsgPackTypeInt16(b byte) bool {
-	return b == MsgPackTypes.Int16
-}
-
-func isMsgPackTypeInt32(b byte) bool {
-	return b == MsgPackTypes.Int32
-}
-
-func isMsgPackTypeInt64(b byte) bool {
-	return b == MsgPackTypes.Int64
-}
-
-// isMsgPackTypeFloat32 checks if the byte represents a MsgPack float32 type.
-func isMsgPackTypeFloat32(b byte) bool {
-	return b == MsgPackTypes.Float32
-}
-
-// isMsgPackTypeFloat64 checks if the byte represents a MsgPack float64 type.
-func isMsgPackTypeFloat64(b byte) bool {
-	return b == MsgPackTypes.Float64
-}
-
-// isMsgPackTypeString checks if the byte represents a MsgPack string type.
-func isMsgPackTypeString(b byte) bool {
-	// Using binary mask to filter out the 3 MSBs and compare with the pattern 101xxxxx
-	return (b & 0xE0) == MsgPackTypes.FixStr
-}
-
-// isMsgPackTypeArray checks if the byte represents a MsgPack array type.
-func isMsgPackTypeArray(b byte) bool {
-	// Using binary mask to filter out the 4 MSBs and compare with the pattern 1001xxxx
-	return (b & 0xF0) == MsgPackTypes.FixArray
-}
-
-// isMsgPackTypeMap checks if the byte represents a MsgPack map type.
-func isMsgPackTypeMap(b byte) bool {
-	// Using binary mask to filter out the 4 MSBs and compare with the pattern 1000xxxx
-	return (b & 0xF0) == MsgPackTypes.FixMap
 }
 
 func (m *Msgpack) handleMsgPackTypeString(data []byte, jsonObj *map[string]interface{}, i *int) (string, error) {
