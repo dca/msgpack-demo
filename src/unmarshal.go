@@ -43,14 +43,14 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return str, nil
 
 	case isMsgPackTypePositiveInt(currentByte):
-		integer, err := m.handleMsgPackTypePositiveInt(data, jsonObj, i)
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.FixIntPos, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeNegativeInt(currentByte):
-		integer, err := m.handleMsgPackTypeNegativeInt(data, jsonObj, i)
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.FixIntNeg, data, i)
 		if err != nil {
 			return nil, err
 		}
@@ -58,7 +58,7 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 
 	case isMsgPackTypeUint8(currentByte):
 		*i++
-		integer, err := m.handleMsgPackTypeUint8(data, jsonObj, i)
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint8, data, i)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 
 	case isMsgPackTypeUint16(currentByte):
 		*i++
-		integer, err := m.handleMsgPackTypeUint16(data, jsonObj, i)
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint16, data, i)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 
 	case isMsgPackTypeUint32(currentByte):
 		*i++
-		integer, err := m.handleMsgPackTypeUint32(data, jsonObj, i)
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint32, data, i)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +82,7 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 
 	case isMsgPackTypeUInt64(currentByte):
 		*i++
-		integer, err := m.handleMsgPackTypeUint64(data, jsonObj, i)
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint64, data, i)
 		if err != nil {
 			return nil, err
 		}
@@ -168,22 +168,6 @@ func isMsgPackTypeMap(b byte) bool {
 	return (b & 0xF0) == MsgPackTypes.FixMap
 }
 
-func (m *Msgpack) handleMsgPackTypeNil() {
-
-}
-
-func (m *Msgpack) handleMsgPackTypeTrue() {
-
-}
-
-func (m *Msgpack) handleMsgPackTypeFalse() {
-
-}
-
-func (m *Msgpack) handleMsgPackTypeFloat64() {
-
-}
-
 func (m *Msgpack) handleMsgPackTypeString(data []byte, jsonObj *map[string]interface{}, i *int) (string, error) {
 	currentByte := data[*i]
 	*i++
@@ -261,80 +245,62 @@ func (m *Msgpack) handleMsgPackTypeMap(data []byte, jsonObj *map[string]interfac
 	return deepJsonObj, nil
 }
 
-func (m *Msgpack) handleMsgPackTypeInt() {
+// handleMsgPackTypeIntFamily handles int family types
+func (m *Msgpack) handleMsgPackTypeIntFamily(t int, data []byte, i *int) (interface{}, error) {
 
-}
+	var value interface{}
+	var err error
+	var bytes []byte
 
-func (m *Msgpack) handleMsgPackTypeUint() {
-
-}
-
-func (m *Msgpack) handleMsgPackTypePositiveInt(data []byte, jsonObj *map[string]interface{}, i *int) (int, error) {
 	currentByte := data[*i]
-	*i++
+	length := 0
 
-	// parse int
-	return int(currentByte & 0x7F), nil // 0x7F = 01111111
-}
+	switch t {
 
-func (m *Msgpack) handleMsgPackTypeNegativeInt(data []byte, jsonObj *map[string]interface{}, i *int) (int, error) {
-	currentByte := data[*i]
-	*i++
+	case MsgPackTypes.FixIntPos:
+		value = int(currentByte & 0x7F) // 0x7F = 01111111
 
-	// parse int
-	value := int(int8(currentByte))
+	case MsgPackTypes.FixIntNeg:
+		value = int(int8(currentByte))
+
+	case MsgPackTypes.Uint8:
+		length = 1
+		bytes, err = m.getNextBytes(data, i, length)
+		value = uint8(bytes[0])
+
+	case MsgPackTypes.Uint16:
+		length = 2
+		bytes, err = m.getNextBytes(data, i, length)
+		value = binary.BigEndian.Uint16(bytes)
+
+	case MsgPackTypes.Uint32:
+		length = 4
+		bytes, err = m.getNextBytes(data, i, length)
+		value = binary.BigEndian.Uint32(bytes)
+
+	case MsgPackTypes.Uint64:
+		length = 8
+		bytes, err = m.getNextBytes(data, i, length)
+		value = binary.BigEndian.Uint64(bytes)
+
+	default:
+		return nil, fmt.Errorf("unknown int family type %d", t)
+	}
+
+	if err != nil {
+		return nil, err
+	}
 	return value, nil
 }
 
-func (m *Msgpack) handleMsgPackTypeUint8(data []byte, jsonObj *map[string]interface{}, i *int) (uint8, error) {
-	currentByte := data[*i]
-	*i++
-
-	// parse uint8
-	return uint8(currentByte), nil
-}
-
-func (m *Msgpack) handleMsgPackTypeUint16(data []byte, jsonObj *map[string]interface{}, i *int) (uint16, error) {
-	// Ensure 2 bytes are available in data
-	if *i+2 > len(data) {
-		return 0, fmt.Errorf("insufficient data for uint16")
+// getNextBytes returns the next n bytes from data
+func (m *Msgpack) getNextBytes(data []byte, i *int, length int) ([]byte, error) {
+	if *i+length > len(data) {
+		return nil, fmt.Errorf("data out of range")
 	}
 
-	// Read uint16 bytes
-	value := binary.BigEndian.Uint16(data[*i : *i+2])
-
-	// Increment pointer by 2
-	*i += 2
-
-	return value, nil
-}
-
-func (m *Msgpack) handleMsgPackTypeUint32(data []byte, jsonObj *map[string]interface{}, i *int) (uint32, error) {
-	// Ensure 4 bytes are available in data
-	if *i+4 > len(data) {
-		return 0, fmt.Errorf("insufficient data for uint32")
-	}
-
-	// Read uint32 bytes
-	value := binary.BigEndian.Uint32(data[*i : *i+4])
-
-	// Increment pointer by 4
-	*i += 4
-
-	return value, nil
-}
-
-func (m *Msgpack) handleMsgPackTypeUint64(data []byte, jsonObj *map[string]interface{}, i *int) (uint64, error) {
-	// Ensure 8 bytes are available in data
-	if *i+8 > len(data) {
-		return 0, fmt.Errorf("insufficient data for uint64")
-	}
-
-	// Read uint64 bytes
-	value := binary.BigEndian.Uint64(data[*i : *i+8])
-
-	// Increment pointer by 8
-	*i += 8
+	value := data[*i : *i+length]
+	*i += length
 
 	return value, nil
 }
