@@ -91,6 +91,33 @@ func TestUnmarshal(t *testing.T) {
 				"compact": 5,
 			},
 		},
+		{
+			desc:       "Test Case - int8",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xd0, 0x05},
+			expectedJsonObj: map[string]interface{}{
+				"compact": 5,
+			},
+		},
+		{
+			desc:       "Test Case - int16",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xd1, 0x00, 0x05},
+			expectedJsonObj: map[string]interface{}{
+				"compact": 5,
+			},
+		}, {
+			desc:       "Test Case - int32",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xd2, 0x00, 0x00, 0x00, 0x05},
+			expectedJsonObj: map[string]interface{}{
+				"compact": 5,
+			},
+		},
+		{
+			desc:       "Test Case - int64",
+			inputBytes: []byte{0x81, 0xa7, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x63, 0x74, 0xd3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+			expectedJsonObj: map[string]interface{}{
+				"compact": 5,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -106,7 +133,7 @@ func TestUnmarshal(t *testing.T) {
 			require.NoError(t, err)
 
 			require.NoError(t, err)
-			require.Equal(t, string(jsonOutput), string(jsonExpected), "The two JSON string should be equal")
+			require.Equal(t, string(jsonExpected), string(jsonOutput), "The two JSON string should be equal")
 		})
 	}
 }

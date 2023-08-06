@@ -84,6 +84,34 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		}
 		return integer, nil
 
+	case isMsgPackTypeInt8(currentByte):
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int8, data, i)
+		if err != nil {
+			return nil, err
+		}
+		return integer, nil
+
+	case isMsgPackTypeInt16(currentByte):
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int16, data, i)
+		if err != nil {
+			return nil, err
+		}
+		return integer, nil
+
+	case isMsgPackTypeInt32(currentByte):
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int32, data, i)
+		if err != nil {
+			return nil, err
+		}
+		return integer, nil
+
+	case isMsgPackTypeInt64(currentByte):
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int64, data, i)
+		if err != nil {
+			return nil, err
+		}
+		return integer, nil
+
 	case isMsgPackTypeArray(currentByte):
 		arr, err := m.handleMsgPackTypeArray(data, jsonObj, i)
 		if err != nil {
@@ -139,6 +167,22 @@ func isMsgPackTypeUint32(b byte) bool {
 
 func isMsgPackTypeUInt64(b byte) bool {
 	return b == MsgPackTypes.Uint64
+}
+
+func isMsgPackTypeInt8(b byte) bool {
+	return b == MsgPackTypes.Int8
+}
+
+func isMsgPackTypeInt16(b byte) bool {
+	return b == MsgPackTypes.Int16
+}
+
+func isMsgPackTypeInt32(b byte) bool {
+	return b == MsgPackTypes.Int32
+}
+
+func isMsgPackTypeInt64(b byte) bool {
+	return b == MsgPackTypes.Int64
 }
 
 // isMsgPackTypeFloat64 checks if the byte represents a MsgPack float64 type.
@@ -280,6 +324,25 @@ func (m *Msgpack) handleMsgPackTypeIntFamily(t int, data []byte, i *int) (interf
 		bytes, err = m.getNextBytes(data, i, length)
 		value = binary.BigEndian.Uint64(bytes)
 
+	case MsgPackTypes.Int8:
+		length = 1
+		bytes, err = m.getNextBytes(data, i, length)
+		value = int8(bytes[0])
+
+	case MsgPackTypes.Int16:
+		length = 2
+		bytes, err = m.getNextBytes(data, i, length)
+		value = int16(binary.BigEndian.Uint16(bytes))
+
+	case MsgPackTypes.Int32:
+		length = 4
+		bytes, err = m.getNextBytes(data, i, length)
+		value = int32(binary.BigEndian.Uint32(bytes))
+
+	case MsgPackTypes.Int64:
+		length = 8
+		bytes, err = m.getNextBytes(data, i, length)
+		value = int64(binary.BigEndian.Uint64(bytes))
 	default:
 		return nil, fmt.Errorf("unknown int family type %d", t)
 	}
