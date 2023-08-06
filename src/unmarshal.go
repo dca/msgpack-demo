@@ -44,84 +44,84 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		return str, nil
 
 	case isMsgPackTypePositiveInt(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.FixIntPos, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.FixIntPos, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeNegativeInt(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.FixIntNeg, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.FixIntNeg, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeUint8(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint8, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint8, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeUint16(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint16, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint16, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeUint32(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint32, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint32, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeUInt64(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Uint64, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Uint64, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeInt8(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int8, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int8, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeInt16(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int16, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int16, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeInt32(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int32, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int32, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeInt64(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Int64, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Int64, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeFloat32(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Float32, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Float32, data, i)
 		if err != nil {
 			return nil, err
 		}
 		return integer, nil
 
 	case isMsgPackTypeFloat64(currentByte):
-		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Float64, data, i)
+		integer, err := m.handleMsgPackTypeNumberFamily(MsgPackTypes.Float64, data, i)
 		if err != nil {
 			return nil, err
 		}
@@ -305,8 +305,8 @@ func (m *Msgpack) handleMsgPackTypeMap(data []byte, jsonObj *map[string]interfac
 	return deepJsonObj, nil
 }
 
-// handleMsgPackTypeIntFamily handles int family types
-func (m *Msgpack) handleMsgPackTypeIntFamily(t int, data []byte, i *int) (interface{}, error) {
+// handleMsgPackTypeNumberFamily handles number family types
+func (m *Msgpack) handleMsgPackTypeNumberFamily(t int, data []byte, i *int) (interface{}, error) {
 
 	currentByte := data[*i]
 	*i++
