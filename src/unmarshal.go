@@ -3,6 +3,7 @@ package msgpack
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
 	MsgPackTypes "msgpack/src/types"
 )
 
@@ -112,6 +113,20 @@ func (m *Msgpack) decodeMsgpack(data []byte, jsonObj *map[string]interface{}, i 
 		}
 		return integer, nil
 
+	case isMsgPackTypeFloat32(currentByte):
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Float32, data, i)
+		if err != nil {
+			return nil, err
+		}
+		return integer, nil
+
+	case isMsgPackTypeFloat64(currentByte):
+		integer, err := m.handleMsgPackTypeIntFamily(MsgPackTypes.Float64, data, i)
+		if err != nil {
+			return nil, err
+		}
+		return integer, nil
+
 	case isMsgPackTypeArray(currentByte):
 		arr, err := m.handleMsgPackTypeArray(data, jsonObj, i)
 		if err != nil {
@@ -183,6 +198,11 @@ func isMsgPackTypeInt32(b byte) bool {
 
 func isMsgPackTypeInt64(b byte) bool {
 	return b == MsgPackTypes.Int64
+}
+
+// isMsgPackTypeFloat32 checks if the byte represents a MsgPack float32 type.
+func isMsgPackTypeFloat32(b byte) bool {
+	return b == MsgPackTypes.Float32
 }
 
 // isMsgPackTypeFloat64 checks if the byte represents a MsgPack float64 type.
@@ -343,6 +363,17 @@ func (m *Msgpack) handleMsgPackTypeIntFamily(t int, data []byte, i *int) (interf
 		length = 8
 		bytes, err = m.getNextBytes(data, i, length)
 		value = int64(binary.BigEndian.Uint64(bytes))
+
+	case MsgPackTypes.Float32:
+		length = 4
+		bytes, err = m.getNextBytes(data, i, length)
+		value = math.Float32frombits(binary.BigEndian.Uint32(bytes))
+
+	case MsgPackTypes.Float64:
+		length = 8
+		bytes, err = m.getNextBytes(data, i, length)
+		value = math.Float64frombits(binary.BigEndian.Uint64(bytes))
+
 	default:
 		return nil, fmt.Errorf("unknown int family type %d", t)
 	}
