@@ -140,13 +140,16 @@ func (m *Msgpack) encodeMsgPackTypeNumberFamily(result *[]byte, num json.Number)
 			*result = append(*result, buf.Bytes()...)
 
 		default: // ===> case ui <= math.MaxUint64:
-			*result = append(*result, byte(MsgPackTypes.Uint32))
+			*result = append(*result, byte(MsgPackTypes.Uint64))
 			binary.Write(&buf, binary.BigEndian, uint64(ui))
 			*result = append(*result, buf.Bytes()...)
 		}
 	} else if i, err := num.Int64(); err == nil {
 
 		switch {
+		case i < 0 && i >= -32:
+			*result = append(*result, byte(i))
+
 		case i >= math.MinInt8 && i <= math.MaxInt8:
 			*result = append(*result, byte(MsgPackTypes.Int8))
 			*result = append(*result, byte(int8(i)))
