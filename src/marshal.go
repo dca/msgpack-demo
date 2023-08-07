@@ -3,8 +3,11 @@ package msgpack
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
+	"math"
 	"reflect"
+	"strconv"
 
 	MsgPackTypes "msgpack/src/types"
 )
@@ -24,7 +27,7 @@ func (m *Msgpack) encodeJSON(data map[string]interface{}) ([]byte, error) {
 	return result, nil
 }
 
-func (m *Msgpack) handleValue(result *[]byte, data interface{}) {
+func (m *Msgpack) handleValue(result *[]byte, data interface{}) error {
 	switch v := reflect.ValueOf(data); v.Kind() {
 
 	case reflect.Bool:
@@ -53,13 +56,24 @@ func (m *Msgpack) handleValue(result *[]byte, data interface{}) {
 		*result = append(*result, buf.Bytes()...)
 
 	case reflect.String:
-		valueAsBytes := []byte(v.String())
+		//
+		if num, ok := data.(json.Number); ok {
+			// as number case
+			if _, err := m.encodeMsgPackTypeNumberFamily(result, num); err != nil {
+				return err
+			}
 
-		// add type prefix
-		*result = append(*result, byte(len(valueAsBytes))+MsgPackTypes.FixStr)
+		} else {
+			// as string case
 
-		// add value
-		*result = append(*result, valueAsBytes...)
+			valueAsBytes := []byte(v.String())
+
+			// add type prefix
+			*result = append(*result, byte(len(valueAsBytes))+MsgPackTypes.FixStr)
+
+			// add value
+			*result = append(*result, valueAsBytes...)
+		}
 
 	case reflect.Slice, reflect.Array:
 		// add type prefix
@@ -98,4 +112,73 @@ func (m *Msgpack) handleValue(result *[]byte, data interface{}) {
 	default:
 		fmt.Println("unhandle case.", v.Kind(), v)
 	}
+
+	return nil
+}
+
+func (m *Msgpack) encodeMsgPackTypeNumberFamily(result *[]byte, num json.Number) (*[]byte, error) {
+
+	var buf bytes.Buffer
+
+	if ui, err := strconv.ParseUint(num.String(), 10, 64); err == nil {
+		switch {
+		case ui <= 127:
+			*result = append(*result, byte(ui))
+
+		case ui <= math.MaxUint8:
+			*result = append(*result, byte(MsgPackTypes.Uint8))
+			*result = append(*result, byte(uint8(ui)))
+
+		case ui <= math.MaxUint16:
+			*result = append(*result, byte(MsgPackTypes.Uint16))
+			binary.Write(&buf, binary.BigEndian, uint16(ui))
+			*result = append(*result, buf.Bytes()...)
+
+		case ui <= math.MaxUint32:
+			*result = append(*result, byte(MsgPackTypes.Uint32))
+			binary.Write(&buf, binary.BigEndian, uint32(ui))
+			*result = append(*result, buf.Bytes()...)
+
+		default: // ===> case ui <= math.MaxUint64:
+			*result = append(*result, byte(MsgPackTypes.Uint32))
+			binary.Write(&buf, binary.BigEndian, uint64(ui))
+			*result = append(*result, buf.Bytes()...)
+		}
+	} else if i, err := num.Int64(); err == nil {
+
+		switch {
+		case i >= math.MinInt8 && i <= math.MaxInt8:
+			*result = append(*result, byte(MsgPackTypes.Int8))
+			*result = append(*result, byte(int8(i)))
+
+		case i >= math.MinInt16 && i <= math.MaxInt16:
+			*result = append(*result, byte(MsgPackTypes.Int16))
+			binary.Write(&buf, binary.BigEndian, int16(i))
+			*result = append(*result, buf.Bytes()...)
+
+		case i >= math.MinInt32 && i <= math.MaxInt32:
+			*result = append(*result, byte(MsgPackTypes.Int32))
+			binary.Write(&buf, binary.BigEndian, int32(i))
+			*result = append(*result, buf.Bytes()...)
+
+		default: // ===> case i >= math.MinInt64 && i <= math.MaxInt64:
+			*result = append(*result, byte(MsgPackTypes.Int64))
+			binary.Write(&buf, binary.BigEndian, int64(i))
+			*result = append(*result, buf.Bytes()...)
+		}
+	} else if f, err := num.Float64(); err == nil {
+		switch {
+		// case f >= math.SmallestNonzeroFloat32 && f <= math.MaxFloat32:
+		// 	*result = append(*result, byte(MsgPackTypes.Float32))
+		// 	binary.Write(&buf, binary.BigEndian, float32(f))
+		// 	*result = append(*result, buf.Bytes()...)
+
+		default: // ===> case f >= math.SmallestNonzeroFloat64 && f <= math.MaxFloat64:
+			*result = append(*result, byte(MsgPackTypes.Float64))
+			binary.Write(&buf, binary.BigEndian, float64(f))
+			*result = append(*result, buf.Bytes()...)
+		}
+	}
+
+	return result, nil
 }
